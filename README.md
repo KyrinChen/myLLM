@@ -71,14 +71,19 @@
 ![image-20250302152241013](README.assets/image-20250302152241013.png)
 
 从收敛情况来看，等效batch_size=160(batch_size * gradient_accumlation)左右是个不错的实践.
-- 最终选择：epochs=2 ,batch_size=84, 梯度累积=2 ，lr=5e-4, warmup=None
+- 最终选择：epochs=1,batch_size=70, 梯度累积=2 ，lr=5e-4, warmup=None
   - 显存峰值：23G/24G（利用率还是比较高的）
-  ![image-20250302152601083](README.assets/image-20250302152601083.png)
-  ![image-20250302152614470](README.assets/image-20250302152614470.png)
+  ![image-20250302191027951](README.assets/image-20250302191027951.png)
 
+- 执行推理过程
+  -  `python eval_model.py --model_mode 0`
 
+![image-20250302170719292](README.assets/image-20250302170719292.png)
+
+可以看到pretrain模型本身是不具备问答能力的，只是在学词语接龙
 
 ### SFT
+
 SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，SFT类数据集定义参考dataset.py文件
 
 - SFT数据
@@ -95,13 +100,28 @@ SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，
     ]
 }
 ```
+- 使用sft_mini_512.jsonl数据跑，单个epoch时间约为**80min**，epochs=1 ,batch_size=75, 梯度累积=8 ，lr=5e-4, warmup=None
+
+  ![image-20250302200622809](README.assets/image-20250302200622809.png)
+
 - 使用sft_512.jsonl数据跑，单个epoch时间约为6.7h，epochs=1 ,batch_size=84, 梯度累积=2 ，lr=5e-4, warmup=None
-![image-20250302152747649](README.assets/image-20250302152747649.png)
+  ![image-20250302152747649](README.assets/image-20250302152747649.png)
+
+### 推理
+
+- 执行推理过程
+  -  `python eval_model.py --model_mode 1` 
+
+![image-20250302200435274](README.assets/image-20250302200435274.png)
+
+长文本训练能力
 
 
 - 使用sft_1024.jsonl 训练，epochs=1,batch_size=28，lr=5e-4 ,梯度累积=8，max_seq_len=1024, warmup=None
-![image-20250302152846177](README.assets/image-20250302152846177.png)
-![image-20250302152900433](README.assets/image-20250302152900433.png)
+  ![image-20250302152846177](README.assets/image-20250302152846177.png)
+  ![image-20250302152900433](README.assets/image-20250302152900433.png)
+
+
 
 ### Distill
 
@@ -131,5 +151,6 @@ SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，
 - python eval_model.py --model_mode 2
   
 
-![image-20250302153020555](README.assets/image-20250302153020555.png)
+![image-20250302211149712](README.assets/image-20250302211149712.png)
 
+![image-20250302211233143](README.assets/image-20250302211233143.png)
