@@ -51,7 +51,7 @@
   - transformers版本：4.49.0
   - 单机1卡4090/24G
   - ![image-20250302151902167](README.assets/image-20250302151902167.png)
-### Pretrain
+### 预训练Pretrain
 4090/24G，跑2个epoch，每个epoch约80min，总时长<3h
 
   - 小实验：上述都刚刚跑到总step数的10%左右就停掉了
@@ -75,14 +75,15 @@
   - 显存峰值：23G/24G（利用率还是比较高的）
   ![image-20250302191027951](README.assets/image-20250302191027951.png)
 
-- 执行推理过程
-  -  `python eval_model.py --model_mode 0`
+#### 执行推理过程
+
+`python eval_model.py --model_mode 0`
 
 ![image-20250302170719292](README.assets/image-20250302170719292.png)
 
 可以看到pretrain模型本身是不具备问答能力的，只是在学词语接龙
 
-### SFT
+### SFT训练
 
 SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，SFT类数据集定义参考dataset.py文件
 
@@ -107,14 +108,14 @@ SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，
 - 使用sft_512.jsonl数据跑，单个epoch时间约为6.7h，epochs=1 ,batch_size=84, 梯度累积=2 ，lr=5e-4, warmup=None
   ![image-20250302152747649](README.assets/image-20250302152747649.png)
 
-### 推理
+#### 推理
 
 - 执行推理过程
   -  `python eval_model.py --model_mode 1` 
 
 ![image-20250302200435274](README.assets/image-20250302200435274.png)
 
-长文本训练能力
+#### 长文本训练能力
 
 
 - 使用sft_1024.jsonl 训练，epochs=1,batch_size=28，lr=5e-4 ,梯度累积=8，max_seq_len=1024, warmup=None
@@ -123,7 +124,7 @@ SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，
 
 
 
-### Distill
+### R1蒸馏：Distill
 
 这里我们采用黑盒蒸馏方法对拥有长文能力的model进行蒸馏，后面会对比长文能力的有无对蒸馏效果的影响。
 - R1的输出格式一般采用在<think> 思考内容 </think> <answer> 回答</answer>的格式来产生慢思考过程。
@@ -146,11 +147,23 @@ SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，
 
 
 
-## 推理
+最大长度不够导致效果很差
+
+![image-20250302214056462](README.assets/image-20250302214056462.png)
+
+改为max_seq_len=1024
+
+- 第二轮epoch内存给爆了，偶买噶我宝贵的gpu资源……（蓝色曲线）![image-20250302225730473](README.assets/image-20250302225730473.png)
+
+- 减小batchsize，增大梯度累积：accumlation steps从8到10，batchsize从28到24
+
+  ![image-20250303095851589](README.assets/image-20250303095851589.png)
+
+#### 推理
+
 - 直接通过修改eval_model.py加载相应模型
 - python eval_model.py --model_mode 2
-  
 
-![image-20250302211149712](README.assets/image-20250302211149712.png)
+最终效果
 
-![image-20250302211233143](README.assets/image-20250302211233143.png)
+![image-20250303101424924](README.assets/image-20250303101424924.png)
