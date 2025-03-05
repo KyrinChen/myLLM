@@ -147,23 +147,46 @@ SFT的代码大量继承了Pretrain的代码，仅仅数据加载做了改变，
 
 
 
+#### 插曲1：max_seq_len不够, 效果很差
+
 最大长度不够导致效果很差
 
 ![image-20250302214056462](README.assets/image-20250302214056462.png)
 
-改为max_seq_len=1024
+于是改为max_seq_len=1024
+
+#### 插曲2：max_seq_len调上来内存爆了
 
 - 第二轮epoch内存给爆了，偶买噶我宝贵的gpu资源……（蓝色曲线）![image-20250302225730473](README.assets/image-20250302225730473.png)
 
-- 减小batchsize，增大梯度累积：accumlation steps从8到10，batchsize从28到24
 
-  ![image-20250303095851589](README.assets/image-20250303095851589.png)
+减小batchsize，增大梯度累积：accumlation steps从8到10，batchsize从28到24，跑通了！
 
-#### 推理
+![image-20250303095851589](README.assets/image-20250303095851589.png)
 
-- 直接通过修改eval_model.py加载相应模型
+#### 插曲3：幻觉反而变严重了
+
+出现了复读，且不能按照思维链的方式思考
+
+![image-20250303101424924](README.assets/image-20250303095815645.png)
+
+#### 最终方案：在1.5epoch时保存模型
+
+- 观察loss曲线：每个epoch结束的突刺（Loss Spike）比较严重，导致最终保存的模型很不稳定
+
+- 推测：训练数据有问题，在**每个epoch结尾有脏数据**（也不一定是客观上的脏数据，比如模型没有英文能力，如果最后部分数据有大量英文，那必然会让我们模型loss训飞），会导致模型训练不稳定。
+
+- 尝试：在1.5个epoch（计数特定步数后另存新的pth）处保存一次，效果应该会好很多
+
+![image-20250305185800871](README.assets/image-20250305185800871.png)
+
+#### 最终推理效果
+
+- 直接通过修改eval_model.py加载相应模型：distill_1.5epoch.pth
 - python eval_model.py --model_mode 2
 
-最终效果
+最终效果：基本ok！
 
-![image-20250303101424924](README.assets/image-20250303101424924.png)
+![image-20250305185201852](README.assets/image-20250305185201852.png)
+
+![image-20250305185237230](README.assets/image-20250305185237230.png)
