@@ -36,11 +36,8 @@
 ├── SFT.py                  # 基础指令微调（512 tokens上下文）
 ├── SFT_long.py             # 长文本指令微调（1024 tokens上下文）
 ├── distill.py              # R1推理蒸馏实现
+├── distill_1.5epoch.py     # R1推理蒸馏实现优化：在epoch=1.5时保存
 ├── model_eval.py           # 模型交互式测试脚本
-├── pretrain.log            # 预训练日志
-├── SFT.log                 # SFT日志
-├── SFT_long.log            # SFT日志
-├── distill.log             # R1蒸馏日志
 └── README.md
 ```
 
